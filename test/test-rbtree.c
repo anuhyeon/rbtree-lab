@@ -3,17 +3,19 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+//#define SENTINEL // 하면 CFLAGS=-I ../src -Wall -g -DSENTINEL  여기서 -DSENTINEL 이거 안 해도됌
 
 // new_rbtree should return rbtree struct with null root node
 void test_init(void) {
   rbtree *t = new_rbtree();
   assert(t != NULL);
-#ifdef SENTINEL
-  assert(t->nil != NULL);
-  assert(t->root == t->nil);
+#ifdef SENTINEL //SENTINEL이 정의 되어있다면
+  assert(t->nil != NULL); // t->nil == null 이면 에러메세지 출력
+  assert(t->root == t->nil); // t->root != t->nil 이면 에러 메세지출력
+
 #else
   assert(t->root == NULL);
-#endif
+#endif //#if, #ifdef, #ifndef와 같은 조건부 컴파일 지시문으로 시작된 블록은 항상 #endif로 끝나야 함. 이는 조건부 컴파일 블록의 구조적 무결성을 유지하기 위함임.
   delete_rbtree(t);
 }
 
@@ -21,8 +23,16 @@ void test_init(void) {
 void test_insert_single(const key_t key) {
   rbtree *t = new_rbtree();
   node_t *p = rbtree_insert(t, key);
+  //printf("\n%d\n",p->key);
   assert(p != NULL);
-  assert(t->root == p);
+  assert(t->root == p
+  
+  
+  
+  
+  
+  
+  );
   assert(p->key == key);
   // assert(p->color == RBTREE_BLACK);  // color of root node should be black
 #ifdef SENTINEL
@@ -46,10 +56,11 @@ void test_find_single(const key_t key, const key_t wrong_key) {
   assert(q != NULL);
   assert(q->key == key);
   assert(q == p);
+  //printf("\n%d\n", q->key);
 
   q = rbtree_find(t, wrong_key);
-  assert(q == NULL);
-
+  assert(q == NULL); //q가 널이 아니면 경고
+  //printf("\nasdasd\n");
   delete_rbtree(t);
 }
 
@@ -95,7 +106,7 @@ void test_minmax(key_t *arr, const size_t n) {
   assert(n > 0 && arr != NULL);
 
   rbtree *t = new_rbtree();
-  assert(t != NULL);
+  assert(t != NULL); 
 
   insert_arr(t, arr, n);
   assert(t->root != NULL);
@@ -105,21 +116,26 @@ void test_minmax(key_t *arr, const size_t n) {
 
   qsort((void *)arr, n, sizeof(key_t), comp);
   node_t *p = rbtree_min(t);
+  printf("\n%d\n",p->key);
   assert(p != NULL);
   assert(p->key == arr[0]);
 
   node_t *q = rbtree_max(t);
+  printf("\n%d\n",q->key);
   assert(q != NULL);
   assert(q->key == arr[n - 1]);
 
   rbtree_erase(t, p);
   p = rbtree_min(t);
+  printf("\n%d\n",p->key); //두번째로 작은 값 출력
+
   assert(p != NULL);
   assert(p->key == arr[1]);
 
   if (n >= 2) {
     rbtree_erase(t, q);
     q = rbtree_max(t);
+    printf("\n%d\n",q->key); //두번째로 큰값 출력
     assert(q != NULL);
     assert(q->key == arr[n - 2]);
   }
@@ -132,10 +148,19 @@ void test_to_array(rbtree *t, const key_t *arr, const size_t n) {
 
   insert_arr(t, arr, n);
   qsort((void *)arr, n, sizeof(key_t), comp);
-
+  printf("arr: ");
+  for (int i = 0; i < n; i++) {
+    printf("%d ",arr[i]);
+  }
+  printf("\n");
   key_t *res = calloc(n, sizeof(key_t));
   rbtree_to_array(t, res, n);
+  printf("res: ");
   for (int i = 0; i < n; i++) {
+    printf("%d ",res[i]);
+  }
+  for (int i = 0; i < n; i++) {
+    //printf("%d ",res[i]);
     assert(arr[i] == res[i]);
   }
   free(res);
@@ -297,6 +322,7 @@ void test_minmax_suite() {
   key_t entries[] = {10, 5, 8, 34, 67, 23, 156, 24, 2, 12};
   const size_t n = sizeof(entries) / sizeof(entries[0]);
   test_minmax(entries, n);
+  // 출력 2 -> 156 -> 5 -> 67 이 순서대로 출력 되어야함.
 }
 
 void test_to_array_suite() {
@@ -369,15 +395,25 @@ void test_find_erase_rand(const size_t n, const unsigned int seed) {
 
 int main(void) {
   test_init();
+  printf("\ntest_init_passed!\n"); //
   test_insert_single(1024);
+  printf("\ntest_insert_single passed!\n"); //
   test_find_single(512, 1024);
+  printf("\ntest_find_single passed!\n"); //
   test_erase_root(128);
+  printf("\ntest_erase_root passed!\n"); //
   test_find_erase_fixed();
+  printf("\ntest_find_erase_fixed passed!\n"); //
   test_minmax_suite();
+  printf("\ntest_minmax_suite passed!\n"); //
   test_to_array_suite();
+  printf("\ntest_to_array_suite passed!\n");
   test_distinct_values();
+  printf("\ntest_distinct_values passed!\n");
   test_duplicate_values();
+  printf("\ntest_duplicate_values passed!\n");
   test_multi_instance();
+  printf("\ntest_multi_instance!\n");
   test_find_erase_rand(10000, 17);
   printf("Passed all tests!\n");
 }
