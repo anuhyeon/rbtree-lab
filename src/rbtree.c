@@ -41,11 +41,31 @@ void rb_transplant(rbtree* t,node_t* u, node_t* v){ //u노드를 v로 대체
   v->parent = u->parent;
 }
 
-void delete_rbtree(rbtree *t)
-{
-  // TODO: reclaim the tree nodes's memory
-  free(t);
+void delete_node(rbtree *t, node_t *node) {
+    if (node == t->nil) {
+        return;
+    }
+    // 왼쪽 자식 노드 방문
+    delete_node(t, node->left);
+    // 오른쪽 자식 노드 방문
+    delete_node(t, node->right);
+    // 현재 노드 메모리 해제
+    free(node);
 }
+
+void delete_rbtree(rbtree *t) {
+    if (t == NULL) {
+        return;
+    }
+    // 루트 노드부터 시작하여 모든 노드를 후위 순회 방식으로 메모리 해제
+    delete_node(t, t->root);
+    // delete_node(t, t->nil);
+    
+    free(t->nil);
+    // 트리 자체의 메모리도 해제
+    free(t);
+}
+
 void left_rotate(rbtree* t, node_t* x){ // x는 회전할 때의 기준 노드
   node_t* y;
   y = x->right; // x위치에 올y 설정
@@ -340,6 +360,8 @@ node_t *rbtree_insert(rbtree *t, const key_t key)
     if(deleted_color == RBTREE_BLACK){
       erase_fixup(t,x);
     }
+
+    free(z);
     
     return 0;
   }
